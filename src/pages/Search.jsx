@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react"
 import { Link, useSearchParams } from "react-router"
 import { getTmdbError, normalizeTitle, tmdbApi } from "../lib/tmdb"
+import { useAppState } from "../lib/AppState"
 import "../components/app.css"
 
 function Search() {
+    const { savedMovies, toggleSavedMovie } = useAppState()
     const [searchParams] = useSearchParams()
     const query = searchParams.get("q")?.trim() || ""
     const [results, setResults] = useState([])
@@ -33,17 +35,17 @@ function Search() {
                 {isLoading && <p className="catalog-message">Searching TMDB...</p>}
                 {error && <p className="catalog-message error-message">{error}</p>}
                 {!isLoading && !error && query && !results.length && <p className="catalog-message">No movies or series matched your search.</p>}
-                <div className="movie-grid">{(query ? results : []).map((item) => <MovieCard movie={item} key={`${item.media_type}-${item.id}`} />)}</div>
+                <div className="movie-grid">{(query ? results : []).map((item) => <MovieCard movie={item} key={`${item.media_type}-${item.id}`} saved={savedMovies.some((saved) => saved.id === item.id && saved.media_type === item.media_type)} onToggle={() => toggleSavedMovie(item)} />)}</div>
             </main>
         </div>
     )
 }
 
-function MovieCard({ movie }) {
-    return <Link className="movie-card" to={`/details/${movie.media_type}/${movie.id}`}>
+function MovieCard({ movie, saved, onToggle }) {
+    return <article className="movie-card"><Link className="movie-card-link" to={`/details/${movie.media_type}/${movie.id}`}>
         <div className="movie-poster"><img src={movie.poster} alt={`${movie.title} poster`} /></div>
         <div className="movie-info"><h3>{movie.title}</h3><p>{movie.year} <span>•</span> {movie.genre} <strong>★ {movie.rating}</strong></p></div>
-    </Link>
+    </Link><button className="save-movie-button" type="button" onClick={onToggle} aria-label={`${saved ? "Remove" : "Add"} ${movie.title} ${saved ? "from" : "to"} my list`}>{saved ? "✓" : "+"}</button></article>
 }
 
 export default Search

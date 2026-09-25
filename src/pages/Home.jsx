@@ -2,12 +2,14 @@ import { useMemo, useState, useEffect } from "react"
 import { Link, useNavigate } from "react-router"
 import "../components/app.css"
 import { fallbackImage, getTmdbError, normalizeTitle, tmdbApi } from "../lib/tmdb"
+import { useAppState } from "../lib/AppState"
 
 const views = ["All", "Movies", "Series", "Animation", "Drama"]
 const tmdbToken = import.meta.env.VITE_TMDB_TOKEN
 
 function Home() {
     const navigate = useNavigate()
+    const { savedMovies, toggleSavedMovie, user } = useAppState()
     const [movies, setMovies] = useState([])
     const [series, setSeries] = useState([])
     const [trendingTitles, setTrendingTitles] = useState([])
@@ -73,10 +75,13 @@ function Home() {
 
     const renderMovieCard = (movie) => (
         // Every card points to the shared movie or series details route.
-        <Link className="movie-card" to={`/details/${movie.media_type}/${movie.id}`} key={`${movie.id}-${movie.media_type}`}>
+        <article className="movie-card" key={`${movie.id}-${movie.media_type}`}>
+        <Link className="movie-card-link" to={`/details/${movie.media_type}/${movie.id}`}>
             <div className="movie-poster"><img src={movie.poster} alt={`${movie.title} poster`} /></div>
             <div className="movie-info"><h3>{movie.title}</h3><p>{movie.year} <span>•</span> {movie.genre} <strong>★ {movie.rating}</strong></p></div>
         </Link>
+        <button className="save-movie-button" type="button" onClick={() => toggleSavedMovie(movie)} aria-label={`Add ${movie.title} to my list`}>{savedMovies.some((saved) => saved.id === movie.id && saved.media_type === movie.media_type) ? "✓" : "+"}</button>
+        </article>
     )
 
     const renderBlock = (title, items) => (
@@ -92,14 +97,14 @@ function Home() {
                 <Link className="home-logo" to="/" aria-label="Streamline home">streamline<span>.</span></Link>
                 <nav className="home-nav" aria-label="Main navigation">
                     <a className="active" href="#browse">Browse</a>
-                    <a href="#my-list">My List</a>
+                    <Link to="/my-lists">My List</Link>
                 </nav>
                 <div className="home-actions">
                     <form className="search-box" onSubmit={handleSearchSubmit}>
                         <span aria-hidden="true">⌕</span>
                         <input value={search} onChange={handleSearchChange} placeholder="Search titles" aria-label="Search titles" />
                     </form>
-                    <button className="avatar" type="button" aria-label="Open profile">A</button>
+                    <Link className="avatar" to="/profile" aria-label="Open profile">{user?.name?.[0] || "A"}</Link>
                 </div>
             </header>
 
@@ -109,19 +114,19 @@ function Home() {
                     <div className="featured-shade" />
                     <div className="featured-content">
                         <p className="eyebrow">Featured now <span>•</span> {featured?.genre || "Movie"}</p>
-                        <h1>{isLoading ? "Loading..." : featured?.title || "No featured title"}</h1>
+                <h1 className="animate-title">{isLoading ? "Loading..." : featured?.title || "No featured title"}</h1>
                         <p className="featured-copy">{featured?.overview || "Discover your next favorite story from this week's most watched titles."}</p>
                         <div className="featured-meta"><span>{featured?.year || "N/A"}</span><span>★ {featured?.rating || "N/A"}</span><span>{featured?.genre || "Movie"}</span></div>
                         <div className="featured-actions">
                            <a href={`/details/${featured?.media_type}/${featured?.id}`}> <button className="watch-button" type="button"><span aria-hidden="true">▶</span> Watch now</button></a>
-                            <button className="list-button" type="button" aria-label="Add The Last Horizon to my list">＋</button>
+                            {featured && <button className="list-button" type="button" onClick={() => toggleSavedMovie(featured)} aria-label={`Add ${featured.title} to my list`}>{savedMovies.some((saved) => saved.id === featured.id && saved.media_type === featured.media_type) ? "✓" : "+"}</button>}
                         </div>
                     </div>
                 </section>
 
                 <section className="browse-section" id="browse">
                     <div className="browse-heading">
-                        <h2>Find your next story</h2>
+                        <h2 className="animate-title">Find your next story</h2>
                         <p className="result-count">{resultCount} titles</p>
                     </div>
                     <div className="genre-list" aria-label="Filter by genre">
