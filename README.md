@@ -1,33 +1,23 @@
-# Streamline Movie App
+﻿# Streamline Movie App
 
 ## Run locally
 
-1. Copy `.env.example` to `.env`.
-2. Add your TMDB bearer token as `VITE_TMDB_TOKEN`.
-3. Run `npm install` and `npm run dev`.
+1. Copy the root .env.example to .env and add VITE_TMDB_TOKEN; leave VITE_API_URL blank for the Vite proxy.
+2. Copy backend/.env.example to backend/.env, then fill in PostgreSQL settings and a random session secret.
+3. Create the movie_app database, then run psql "postgresql://postgres:password@localhost:5432/movie_app" -f backend/schema.sql from the project root, replacing the connection values.
+4. Create a Google OAuth client and allow the redirect URI http://localhost:3000/api/auth/google/callback.
+5. Run npm install in the project root and npm install in backend.
+6. Start the API with npm run dev from backend; start Vite with npm run dev from the project root.
 
-## Deploy to Vercel
+Google sign-in requires PostgreSQL plus both Google credentials. The API can start while local values are pending; database-backed authentication stays disabled until they are set. PostgreSQL also stores Passport sessions after the connection is configured.
 
-1. Import this repository into Vercel.
-2. Keep the framework preset as `Vite` and the build command as `npm run build`.
-3. Add the environment variable `VITE_TMDB_TOKEN` in Vercel project settings for Preview and Production.
-4. Deploy. `vercel.json` rewrites client-side routes such as `/search` and `/details/tv/123` to the Vite app.
+## Deploy
+
+1. Build and deploy the Vite frontend, setting VITE_TMDB_TOKEN and VITE_API_URL to the public backend origin.
+2. Deploy the Express backend separately with DATABASE_URL, SESSION_SECRET, FRONTEND_URL, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, and GOOGLE_CALLBACK_URL.
+3. Set GOOGLE_CALLBACK_URL to the backend origin plus /api/auth/google/callback, then register that exact HTTPS URL in Google Cloud Console.
+4. The backend defaults deployed cookies to SameSite=None and Secure; use a stable random SESSION_SECRET.
 
 ## Validation
 
-Run `npm run lint` and `npm run build` before deploying.
-
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
-
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+Run npm run lint and npm run build before deploying the frontend.

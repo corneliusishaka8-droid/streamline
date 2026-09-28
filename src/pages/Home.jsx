@@ -104,7 +104,10 @@ function Home() {
                         <span aria-hidden="true">⌕</span>
                         <input value={search} onChange={handleSearchChange} placeholder="Search titles" aria-label="Search titles" />
                     </form>
-                    <Link className="avatar" to="/profile" aria-label="Open profile">{user?.name?.[0] || "A"}</Link>
+                    <Link className="avatar" to="/profile" aria-label={user ? `Open ${user.name}'s profile` : "Open profile"} title={user?.name || "Profile"}>
+                        <span>{user?.name?.trim()?.[0]?.toUpperCase() || "P"}</span>
+                        {user?.avatarUrl && <img src={user.avatarUrl} alt={`${user.name}'s Google profile`} onError={(event) => { event.currentTarget.remove() }} />}
+                    </Link>
                 </div>
             </header>
 

@@ -1,7 +1,7 @@
 import things from "../lib/things"
 import { Link } from "react-router"
 
-function Acc(){
+function Acc({ user }){
     return(
         <div className="myaccc">
             {/* The callback must return JSX; without a return, map renders nothing. */}
@@ -30,8 +30,8 @@ function Acc(){
                     </svg>
                  </div>
                 <div className="dick">
-                    <h1 title={thing.name === "my profile" ? "Coming soon" : undefined}>{thing.name}</h1>
-                <p> {thing.des}</p>
+                    <h1>{thing.name === "my profile" && user ? user.name : thing.name}</h1>
+                <p>{thing.name === "my profile" && user ? user.email || "Google account" : thing.des}</p>
                  </div>
                 <svg className="work-arrow" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
                     <path d="M5 12h14m-6-6 6 6-6 6" />
